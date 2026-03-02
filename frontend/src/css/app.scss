@@ -1,0 +1,251 @@
+// SGO ERP - Custom Styles
+
+// Color Variables
+$primary: #1565C0;
+$secondary: #546E7A;
+$accent: #FF6F00;
+$dark: #1A237E;
+$sidebar-bg: #1A237E;
+$sidebar-text: #ECEFF1;
+$sidebar-active: #1565C0;
+$header-bg: #1565C0;
+
+// Global resets
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #F5F5F5;
+}
+
+// ERP Layout Styles
+.erp-sidebar {
+  background: linear-gradient(180deg, #1A237E 0%, #283593 100%);
+  color: $sidebar-text;
+
+  .q-item {
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    margin: 2px 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    &.q-router-link--active,
+    &.q-item--active {
+      background: $sidebar-active;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(21, 101, 192, 0.5);
+    }
+  }
+
+  .q-item__section--avatar {
+    min-width: 36px;
+  }
+}
+
+.erp-header {
+  background: $header-bg;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.erp-logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffffff;
+}
+
+// Card Styles
+.erp-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: none;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.metric-card {
+  border-radius: 12px;
+  overflow: hidden;
+  
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-label {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .metric-icon {
+    opacity: 0.3;
+    font-size: 4rem;
+  }
+}
+
+// Status Badge Colors
+.status-open { background: #E3F2FD; color: #1565C0; }
+.status-in_progress { background: #FFF3E0; color: #E65100; }
+.status-completed { background: #E8F5E9; color: #2E7D32; }
+.status-cancelled { background: #FFEBEE; color: #C62828; }
+.status-pending { background: #F3E5F5; color: #6A1B9A; }
+.status-blocked { background: #FFEBEE; color: #B71C1C; }
+
+// Table Styles
+.erp-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  .q-table__top {
+    padding: 16px;
+  }
+
+  thead tr th {
+    font-weight: 600;
+    color: #37474F;
+    background: #FAFAFA;
+  }
+}
+
+// Form Styles
+.erp-form {
+  .q-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+// Kanban Styles
+.kanban-board {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  min-height: calc(100vh - 120px);
+}
+
+.kanban-column {
+  flex: 0 0 320px;
+  background: #ECEFF1;
+  border-radius: 12px;
+  padding: 12px;
+
+  .kanban-column-header {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 4px 12px;
+  }
+}
+
+.kanban-card {
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Auth Layout
+.auth-layout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1A237E 0%, #283593 50%, #1565C0 100%);
+
+  .auth-card {
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .auth-logo {
+    font-size: 3rem;
+    font-weight: 900;
+    color: $primary;
+    letter-spacing: 4px;
+  }
+
+  .auth-subtitle {
+    color: #546E7A;
+    font-size: 0.85rem;
+  }
+}
+
+// Utility classes
+.text-bold { font-weight: 600; }
+.cursor-pointer { cursor: pointer; }
+.border-radius-md { border-radius: 8px; }
+.border-radius-lg { border-radius: 12px; }
+
+// Progress Bar
+.stage-progress {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+// Timeline
+.order-timeline {
+  .timeline-item {
+    position: relative;
+    padding-left: 32px;
+    margin-bottom: 16px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 24px;
+      bottom: -8px;
+      width: 2px;
+      background: #E0E0E0;
+    }
+
+    &:last-child::before { display: none; }
+
+    .timeline-dot {
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      background: white;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .metric-card .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .kanban-board {
+    flex-direction: column;
+  }
+
+  .kanban-column {
+    flex: none;
+    width: 100%;
+  }
+}
