@@ -12,13 +12,16 @@ const mechanicOnly = (req, res, next) => {
 };
 
 /**
- * Blocks mechanics (type === 2) from accessing admin/user routes.
+ * Blocks mechanics (type === 2) from accessing admin/user-only routes.
+ * Alias: `onlyMechanic` kept for backwards compatibility.
  */
-const onlyMechanic = (req, res, next) => {
+const blockMechanics = (req, res, next) => {
   if (req.user && req.user.type === 2) {
     return res.status(403).json({ success: false, message: 'Mechanics cannot access this resource' });
   }
   next();
 };
 
-module.exports = { mechanicOnly, onlyMechanic };
+const onlyMechanic = blockMechanics;
+
+module.exports = { mechanicOnly, blockMechanics, onlyMechanic };

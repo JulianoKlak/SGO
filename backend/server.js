@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const { sequelize } = require('./src/models');
 const config = require('./src/config/env');
@@ -24,6 +25,26 @@ const dashboardRoutes = require('./src/modules/dashboard/dashboard.routes');
 
 const app = express();
 
+// ── Rate limiters ─────────────────────────────────────────────────────────────
+
+/** Strict limiter for auth endpoints (prevents brute-force) */
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+});
+
+/** General API limiter */
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -31,6 +52,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Static uploads
 app.use('/uploads', express.static('src/uploads'));
+
+// Apply rate limiting
+app.use('/api/auth', authLimiter);
+app.use('/api', apiLimiter);
 
 // Mount routes
 app.use('/api/auth', authRoutes);
