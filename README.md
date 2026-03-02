@@ -119,7 +119,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=sgo_db
 DB_USER=sgo_user
-DB_PASSWORD=sgo_pass
+DB_PASS=sgo_pass
 
 # JWT
 JWT_SECRET=your_jwt_secret_here
