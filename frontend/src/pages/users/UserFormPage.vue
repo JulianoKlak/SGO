@@ -95,13 +95,13 @@ onMounted(async () => {
   if (isEdit.value) {
     try {
       const response = await api.get(`/users/${route.params.id}`)
-      const user = response.data
+      const user = response.data?.data || response.data
       form.value.name = user.name
       form.value.username = user.username
       form.value.email = user.email || ''
       form.value.phone = user.phone || ''
-      form.value.type = user.type
-      form.value.status = user.status ?? true
+      form.value.type = Number(user.type ?? 0)
+      form.value.status = Number(user.status ?? 1) === 1
     } catch {
       $q.notify({ type: 'negative', message: 'Erro ao carregar usuário' })
       router.push('/users')
@@ -113,6 +113,8 @@ async function handleSubmit() {
   loading.value = true
   try {
     const data = { ...form.value }
+    data.type = Number(data.type)
+    data.status = data.status ? 1 : 0
     if (isEdit.value && !data.password) delete data.password
 
     if (isEdit.value) {

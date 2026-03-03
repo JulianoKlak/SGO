@@ -22,7 +22,14 @@ const getById = async (req, res, next) => {
 const create = async (req, res, next) => {
   try {
     const data = createOrderSchema.parse(req.body);
-    return success(res, await orderService.createOrder(data), 'Service order created', 201);
+    const payload = {
+      ...data,
+      user_id: data.user_id ?? req.user?.id,
+    };
+    if (!payload.user_id) {
+      throw Object.assign(new Error('Authenticated user is required to create service order'), { status: 401 });
+    }
+    return success(res, await orderService.createOrder(payload), 'Service order created', 201);
   } catch (err) { next(err); }
 };
 

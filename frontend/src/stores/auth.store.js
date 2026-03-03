@@ -13,11 +13,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(credentials) {
     const response = await api.post('/auth/login', credentials)
-    token.value = response.data.token
-    user.value = response.data.user
+    const payload = response.data?.data || response.data
+    token.value = payload?.token || null
+    user.value = payload?.user || null
+    if (user.value && user.value.type !== undefined) {
+      user.value.type = Number(user.value.type)
+    }
     localStorage.setItem('sgo_token', token.value)
     localStorage.setItem('sgo_user', JSON.stringify(user.value))
-    return response.data
+    return payload
   }
 
   function logout() {
@@ -34,6 +38,9 @@ export const useAuthStore = defineStore('auth', () => {
       token.value = storedToken
       try {
         user.value = JSON.parse(storedUser)
+        if (user.value && user.value.type !== undefined) {
+          user.value.type = Number(user.value.type)
+        }
       } catch {
         logout()
       }

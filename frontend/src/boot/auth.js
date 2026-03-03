@@ -5,6 +5,7 @@ export default async ({ router }) => {
   authStore.initFromStorage()
 
   router.beforeEach((to, from, next) => {
+    const userType = Number(authStore.user?.type)
     const requiresAuth = to.meta?.requiresAuth !== false
     const requiredRoles = to.meta?.roles
 
@@ -12,13 +13,15 @@ export default async ({ router }) => {
       return next('/login')
     }
 
-    if (requiredRoles && !requiredRoles.includes(authStore.user?.type)) {
-      if (authStore.user?.type === 2) return next('/mechanic')
-      return next('/dashboard')
+    if (requiredRoles && !requiredRoles.includes(userType)) {
+      if (userType === 2) return next(to.path === '/mechanic' ? true : '/mechanic')
+      if (userType === 0 || userType === 1) return next(to.path === '/dashboard' ? true : '/dashboard')
+      authStore.logout()
+      return next('/login')
     }
 
     if (to.path === '/login' && authStore.isAuthenticated) {
-      if (authStore.user?.type === 2) return next('/mechanic')
+      if (userType === 2) return next('/mechanic')
       return next('/dashboard')
     }
 

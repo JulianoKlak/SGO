@@ -11,9 +11,10 @@ export const useVehicleStore = defineStore('vehicle', () => {
     loading.value = true
     try {
       const response = await vehicleService.getVehicles(params)
-      vehicles.value = response.data.data || response.data
-      total.value = response.data.total || vehicles.value.length
-      return response.data
+      const payload = response.data?.data || []
+      vehicles.value = Array.isArray(payload) ? payload : []
+      total.value = vehicles.value.length
+      return payload
     } finally {
       loading.value = false
     }
@@ -21,24 +22,24 @@ export const useVehicleStore = defineStore('vehicle', () => {
 
   async function fetchVehicle(id) {
     const response = await vehicleService.getVehicle(id)
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function fetchClientVehicles(clientId) {
     const response = await vehicleService.getClientVehicles(clientId)
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function createVehicle(data) {
     const response = await vehicleService.createVehicle(data)
     await fetchVehicles()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function updateVehicle(id, data) {
     const response = await vehicleService.updateVehicle(id, data)
     await fetchVehicles()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function deleteVehicle(id) {

@@ -3,9 +3,9 @@
 const { z } = require('zod');
 
 const createOrderSchema = z.object({
-  client_id: z.number().int(),
-  vehicle_id: z.number().int().optional(),
-  user_id: z.number().int().optional(),
+  client_id: z.coerce.number().int(),
+  vehicle_id: z.coerce.number().int().optional(),
+  user_id: z.coerce.number().int().optional(),
   status: z.enum(['pending', 'open', 'in_progress', 'completed', 'paid', 'cancelled']).optional(),
   client_contact: z.string().optional(),
   client_email: z.string().email().optional().or(z.literal('')),

@@ -71,6 +71,7 @@ onMounted(async () => {
     try {
       const service = await serviceStore.fetchService(route.params.id)
       Object.assign(form.value, service)
+      form.value.status = Number(service.status ?? 1) === 1
     } catch {
       $q.notify({ type: 'negative', message: 'Erro ao carregar serviço' })
       router.push('/services')
@@ -81,11 +82,17 @@ onMounted(async () => {
 async function handleSubmit() {
   loading.value = true
   try {
+    const payload = {
+      ...form.value,
+      price: form.value.price !== null && form.value.price !== '' ? Number(form.value.price) : undefined,
+      status: form.value.status ? 1 : 0
+    }
+
     if (isEdit.value) {
-      await serviceStore.updateService(route.params.id, form.value)
+      await serviceStore.updateService(route.params.id, payload)
       $q.notify({ type: 'positive', message: 'Serviço atualizado com sucesso!' })
     } else {
-      await serviceStore.createService(form.value)
+      await serviceStore.createService(payload)
       $q.notify({ type: 'positive', message: 'Serviço criado com sucesso!' })
     }
     router.push('/services')

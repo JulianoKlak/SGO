@@ -38,6 +38,7 @@
             clearable
             :disable="!form.client_id"
             :loading="loadingVehicles"
+            :rules="[v => !!v || 'Veículo é obrigatório']"
           />
         </div>
 
@@ -108,7 +109,7 @@ async function onClientChange(clientId) {
   loadingVehicles.value = true
   try {
     const vehicles = await vehicleStore.fetchClientVehicles(clientId)
-    vehicleOptions.value = vehicles.data || vehicles
+    vehicleOptions.value = Array.isArray(vehicles) ? vehicles : []
   } catch {
     vehicleOptions.value = []
   } finally {
@@ -138,14 +139,27 @@ onMounted(async () => {
 async function handleSubmit() {
   loading.value = true
   try {
+    const payload = {
+      client_id: Number(form.value.client_id),
+      vehicle_id: form.value.vehicle_id ? Number(form.value.vehicle_id) : undefined,
+      status: form.value.status
+    }
+
+    if (!payload.client_id || Number.isNaN(payload.client_id)) {
+      throw new Error('Cliente é obrigatório')
+    }
+    if (!payload.vehicle_id || Number.isNaN(payload.vehicle_id)) {
+      throw new Error('Veículo é obrigatório')
+    }
+
     if (isEdit.value) {
-      await orderStore.updateOrder(route.params.id, form.value)
+      await orderStore.updateOrder(route.params.id, payload)
       $q.notify({ type: 'positive', message: 'OS atualizada com sucesso!' })
       router.push(`/service-orders/${route.params.id}`)
     } else {
-      const order = await orderStore.createOrder(form.value)
+      const order = await orderStore.createOrder(payload)
       $q.notify({ type: 'positive', message: 'OS criada com sucesso!' })
-      router.push(`/service-orders/${order.id || order.data?.id}`)
+      router.push(`/service-orders/${order.id}`)
     }
   } catch (err) {
     $q.notify({ type: 'negative', message: err.response?.data?.message || 'Erro ao salvar OS' })

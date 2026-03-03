@@ -11,9 +11,10 @@ export const useServiceStore = defineStore('service', () => {
     loading.value = true
     try {
       const response = await serviceService.getServices(params)
-      services.value = response.data.data || response.data
-      total.value = response.data.total || services.value.length
-      return response.data
+      const payload = response.data?.data || {}
+      services.value = Array.isArray(payload.data) ? payload.data : []
+      total.value = payload.total ?? services.value.length
+      return payload
     } finally {
       loading.value = false
     }
@@ -21,19 +22,19 @@ export const useServiceStore = defineStore('service', () => {
 
   async function fetchService(id) {
     const response = await serviceService.getService(id)
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function createService(data) {
     const response = await serviceService.createService(data)
     await fetchServices()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function updateService(id, data) {
     const response = await serviceService.updateService(id, data)
     await fetchServices()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function deleteService(id) {

@@ -11,9 +11,10 @@ export const useProductStore = defineStore('product', () => {
     loading.value = true
     try {
       const response = await productService.getProducts(params)
-      products.value = response.data.data || response.data
-      total.value = response.data.total || products.value.length
-      return response.data
+      const payload = response.data?.data || {}
+      products.value = Array.isArray(payload.data) ? payload.data : []
+      total.value = payload.total ?? products.value.length
+      return payload
     } finally {
       loading.value = false
     }
@@ -21,19 +22,19 @@ export const useProductStore = defineStore('product', () => {
 
   async function fetchProduct(id) {
     const response = await productService.getProduct(id)
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function createProduct(data) {
     const response = await productService.createProduct(data)
     await fetchProducts()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function updateProduct(id, data) {
     const response = await productService.updateProduct(id, data)
     await fetchProducts()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function deleteProduct(id) {

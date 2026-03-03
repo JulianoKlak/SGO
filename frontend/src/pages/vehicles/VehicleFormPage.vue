@@ -13,12 +13,13 @@
             label="Placa *"
             outlined
             class="col-12 col-md-3"
-            :rules="[v => !!v || 'Placa é obrigatória']"
-            mask="AAA-####"
+            :rules="[v => !!v || 'Placa é obrigatória', v => isValidPlate(v) || 'Formato: AAA-1234 ou AAA-1A23']"
+            maxlength="8"
+            @blur="form.plate = normalizePlate(form.plate)"
           />
           <q-input v-model="form.brand" label="Marca" outlined class="col-12 col-md-3" />
           <q-input v-model="form.model" label="Modelo" outlined class="col-12 col-md-4" />
-          <q-input v-model="form.year" label="Ano" outlined class="col-12 col-md-1" type="number" />
+          <q-input v-model.number="form.year" label="Ano" outlined class="col-12 col-md-1" type="number" />
         </div>
 
         <div class="row q-gutter-md">
@@ -35,10 +36,11 @@
             clearable
             use-input
             input-debounce="300"
+            :rules="[v => v !== null && v !== undefined || 'Cliente é obrigatório']"
             @filter="filterClients"
           />
           <q-input v-model="form.color" label="Cor" outlined class="col-12 col-md-2" />
-          <q-input v-model="form.mileage" label="Quilometragem" outlined class="col-12 col-md-3" type="number" />
+          <q-input v-model.number="form.mileage" label="Quilometragem" outlined class="col-12 col-md-3" type="number" />
         </div>
 
         <div class="row q-gutter-md">
@@ -78,6 +80,21 @@ const form = ref({
   client_id: null, color: '', mileage: null, chassis: '', fuel: ''
 })
 
+function normalizePlate(value) {
+  const raw = String(value || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+  if (raw.length === 7) {
+    return `${raw.slice(0, 3)}-${raw.slice(3)}`
+  }
+  return String(value || '').toUpperCase().trim()
+}
+
+function isValidPlate(value) {
+  const plate = normalizePlate(value)
+  return /^(?:[A-Z]{3}-\d{4}|[A-Z]{3}-\d[A-Z]\d{2})$/.test(plate)
+}
+
 function filterClients(val, update) {
   update(() => {
     const needle = val.toLowerCase()
@@ -104,11 +121,21 @@ onMounted(async () => {
 async function handleSubmit() {
   loading.value = true
   try {
+    const payload = {
+      ...form.value,
+      plate: normalizePlate(form.value.plate),
+      year: form.value.year ? Number(form.value.year) : undefined,
+      client_id: form.value.client_id !== null ? Number(form.value.client_id) : null
+    }
+
     if (isEdit.value) {
-      await vehicleStore.updateVehicle(route.params.id, form.value)
+      await vehicleStore.updateVehicle(route.params.id, payload)
       $q.notify({ type: 'positive', message: 'Veículo atualizado com sucesso!' })
     } else {
-      await vehicleStore.createVehicle(form.value)
+      if (payload.client_id === null || Number.isNaN(payload.client_id)) {
+        throw new Error('Cliente é obrigatório')
+      }
+      await vehicleStore.createVehicle(payload)
       $q.notify({ type: 'positive', message: 'Veículo criado com sucesso!' })
     }
     router.push('/vehicles')

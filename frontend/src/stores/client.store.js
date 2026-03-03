@@ -11,9 +11,10 @@ export const useClientStore = defineStore('client', () => {
     loading.value = true
     try {
       const response = await clientService.getClients(params)
-      clients.value = response.data.data || response.data
-      total.value = response.data.total || clients.value.length
-      return response.data
+      const payload = response.data?.data || {}
+      clients.value = Array.isArray(payload.data) ? payload.data : []
+      total.value = payload.total ?? clients.value.length
+      return payload
     } finally {
       loading.value = false
     }
@@ -21,19 +22,19 @@ export const useClientStore = defineStore('client', () => {
 
   async function fetchClient(id) {
     const response = await clientService.getClient(id)
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function createClient(data) {
     const response = await clientService.createClient(data)
     await fetchClients()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function updateClient(id, data) {
     const response = await clientService.updateClient(id, data)
     await fetchClients()
-    return response.data
+    return response.data?.data || response.data
   }
 
   async function deleteClient(id) {

@@ -1,3 +1,4 @@
+import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth.store'
 
@@ -26,5 +27,9 @@ api.interceptors.response.use(
   }
 )
 
-export default api
+export default boot(({ app }) => {
+  app.config.globalProperties.$axios = axios
+  app.config.globalProperties.$api = api
+})
+
 export { api }

@@ -103,6 +103,7 @@ onMounted(async () => {
     try {
       const product = await productStore.fetchProduct(route.params.id)
       Object.assign(form.value, product)
+      form.value.status = Number(product.status ?? 1) === 1
       if (product.image_url) imagePreview.value = product.image_url
     } catch {
       $q.notify({ type: 'negative', message: 'Erro ao carregar produto' })
@@ -114,11 +115,17 @@ onMounted(async () => {
 async function handleSubmit() {
   loading.value = true
   try {
+    const payload = {
+      ...form.value,
+      price: form.value.price !== null && form.value.price !== '' ? Number(form.value.price) : undefined,
+      status: form.value.status ? 1 : 0
+    }
+
     if (isEdit.value) {
-      await productStore.updateProduct(route.params.id, form.value)
+      await productStore.updateProduct(route.params.id, payload)
       $q.notify({ type: 'positive', message: 'Produto atualizado com sucesso!' })
     } else {
-      await productStore.createProduct(form.value)
+      await productStore.createProduct(payload)
       $q.notify({ type: 'positive', message: 'Produto criado com sucesso!' })
     }
     router.push('/products')
