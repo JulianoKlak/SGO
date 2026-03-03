@@ -26,7 +26,18 @@ export default configure(function (/* ctx */) {
     },
     animations: [],
     ssr: { pwa: false },
-    pwa: {},
+    pwa: {
+      workboxMode: 'GenerateSW',
+      manifest: {
+        name: 'SGO Mecânico',
+        short_name: 'SGO',
+        description: 'Painel mobile de ordens de serviço para mecânicos',
+        display: 'standalone',
+        orientation: 'portrait',
+        background_color: '#1e5cb3',
+        theme_color: '#1e5cb3'
+      }
+    },
     cordova: {},
     capacitor: { hideSplashscreen: true },
     electron: { bundler: 'packager' }

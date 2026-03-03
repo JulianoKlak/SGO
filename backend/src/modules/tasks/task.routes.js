@@ -29,6 +29,8 @@ router.post('/tasks/:id/images', auth, upload.single('image'), c.addImage);
 
 // Mechanic panel
 router.get('/mechanic/orders', auth, mechanicOnly, c.getMechanicOrders);
+router.patch('/mechanic/orders/:id/start', auth, mechanicOnly, c.startMechanicOrder);
+router.patch('/mechanic/orders/:id/block', auth, mechanicOnly, c.blockMechanicOrder);
 router.put('/mechanic/tasks/:id/complete', auth, mechanicOnly, c.completeTask);
 
 module.exports = router;

@@ -42,7 +42,8 @@ export default [
     component: MechanicLayout,
     meta: { requiresAuth: true, roles: [2] },
     children: [
-      { path: '', component: () => import('../pages/mechanic/MechanicDashboard.vue') }
+      { path: '', component: () => import('../pages/mechanic/MechanicDashboard.vue') },
+      { path: 'orders/:id', component: () => import('../pages/mechanic/MechanicOrderDetailPage.vue') }
     ]
   },
   { path: '/:catchAll(.*)*', redirect: '/login' }

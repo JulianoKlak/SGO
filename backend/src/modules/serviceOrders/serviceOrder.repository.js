@@ -94,7 +94,7 @@ const addService = async (orderId, serviceId, price) => {
     defaults: { price },
   });
   if (!created) await record.update({ price });
-  return record;
+  return { record, created };
 };
 
 const removeService = async (orderId, serviceId) => {

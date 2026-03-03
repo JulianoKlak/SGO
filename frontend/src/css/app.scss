@@ -165,6 +165,25 @@ body {
   }
 }
 
+.mechanic-layout {
+  background: #f1f3f6;
+}
+
+.mechanic-header {
+  background: #1e5cb3;
+  color: #fff;
+}
+
+.mechanic-mobile {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.mobile-order-card {
+  border-radius: 12px;
+  background: #fff;
+}
+
 // Auth Layout
 .auth-layout {
   min-height: 100vh;

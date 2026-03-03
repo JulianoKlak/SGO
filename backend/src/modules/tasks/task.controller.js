@@ -93,8 +93,22 @@ const addImage = async (req, res, next) => {
 
 const getMechanicOrders = async (req, res, next) => {
   try {
-    const tasks = await taskService.getMechanicTasks(req.user.id);
-    return success(res, tasks);
+    const orders = await taskService.getMechanicOrders(req.user.id);
+    return success(res, orders);
+  } catch (err) { next(err); }
+};
+
+const startMechanicOrder = async (req, res, next) => {
+  try {
+    const result = await taskService.startMechanicOrder(Number(req.params.id));
+    return success(res, result, 'Service started');
+  } catch (err) { next(err); }
+};
+
+const blockMechanicOrder = async (req, res, next) => {
+  try {
+    const result = await taskService.blockMechanicOrder(Number(req.params.id));
+    return success(res, result, 'Service blocked');
   } catch (err) { next(err); }
 };
 
@@ -112,5 +126,5 @@ const completeTask = async (req, res, next) => {
 module.exports = {
   getByStage, getById, create, update, updateStatus, remove,
   getComments, addComment, getImages, addImage,
-  getMechanicOrders, completeTask,
+  getMechanicOrders, startMechanicOrder, blockMechanicOrder, completeTask,
 };

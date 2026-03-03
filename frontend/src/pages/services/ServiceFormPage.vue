@@ -41,6 +41,39 @@
           />
         </div>
 
+        <div class="row q-gutter-md">
+          <div class="col-12">
+            <div class="row items-center justify-between q-mb-sm">
+              <div class="text-subtitle1 text-weight-bold">Etapas do serviço</div>
+            </div>
+
+            <q-card flat bordered class="q-pa-md q-mb-md">
+              <div class="text-subtitle2 q-mb-sm">Nova Etapa</div>
+              <q-input v-model="newStep.name" label="Nome da Etapa *" outlined />
+              <q-input v-model="newStep.description" label="Descrição da Etapa" outlined class="q-mt-sm" />
+              <div class="row justify-end q-mt-sm">
+                <q-btn color="primary" icon="add" label="Adicionar Etapa" unelevated @click="addStep" />
+              </div>
+            </q-card>
+
+            <div v-if="!steps.length" class="text-grey-6 q-mb-sm">
+              Nenhuma etapa adicionada.
+            </div>
+
+            <q-list bordered separator v-else>
+              <q-item v-for="(step, idx) in steps" :key="idx">
+                <q-item-section>
+                  <q-item-label class="text-weight-medium">{{ step.name }}</q-item-label>
+                  <q-item-label caption>{{ step.description || 'Sem descrição' }}</q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-btn flat round dense color="negative" icon="delete" @click="removeStep(idx)" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </div>
+        </div>
+
         <div class="row q-gutter-sm justify-end q-pt-sm">
           <q-btn flat label="Cancelar" @click="$router.back()" />
           <q-btn type="submit" color="primary" :label="isEdit ? 'Salvar' : 'Criar'" unelevated :loading="loading" />
@@ -63,8 +96,25 @@ const serviceStore = useServiceStore()
 
 const isEdit = computed(() => !!route.params.id)
 const loading = ref(false)
+const steps = ref([])
+const newStep = ref({ name: '', description: '' })
 
 const form = ref({ name: '', description: '', price: 0, status: true })
+
+function addStep() {
+  const name = String(newStep.value.name || '').trim()
+  const description = String(newStep.value.description || '').trim()
+  if (!name) {
+    $q.notify({ type: 'warning', message: 'Informe o nome da etapa' })
+    return
+  }
+  steps.value.push({ name, description })
+  newStep.value = { name: '', description: '' }
+}
+
+function removeStep(index) {
+  steps.value.splice(index, 1)
+}
 
 onMounted(async () => {
   if (isEdit.value) {
@@ -72,6 +122,12 @@ onMounted(async () => {
       const service = await serviceStore.fetchService(route.params.id)
       Object.assign(form.value, service)
       form.value.status = Number(service.status ?? 1) === 1
+      steps.value = Array.isArray(service.steps)
+        ? service.steps.map((s) => ({
+          name: String(s?.name || '').trim(),
+          description: String(s?.description || '').trim()
+        })).filter((s) => s.name)
+        : []
     } catch {
       $q.notify({ type: 'negative', message: 'Erro ao carregar serviço' })
       router.push('/services')
@@ -85,7 +141,8 @@ async function handleSubmit() {
     const payload = {
       ...form.value,
       price: form.value.price !== null && form.value.price !== '' ? Number(form.value.price) : undefined,
-      status: form.value.status ? 1 : 0
+      status: form.value.status ? 1 : 0,
+      steps: steps.value
     }
 
     if (isEdit.value) {

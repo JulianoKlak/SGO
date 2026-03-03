@@ -1,27 +1,18 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header class="erp-header" elevated>
+  <q-layout view="lHh Lpr lFf" class="mechanic-layout">
+    <q-header elevated class="mechanic-header">
       <q-toolbar>
-        <q-icon name="build" size="28px" class="q-mr-sm text-white" />
-        <q-toolbar-title class="text-white text-weight-bold">SGO — Painel do Mecânico</q-toolbar-title>
-        <q-space />
-        <div class="row items-center q-gutter-sm">
-          <div class="column items-end gt-xs">
-            <span class="text-white text-weight-medium text-body2">{{ authStore.user?.name }}</span>
-            <q-badge color="green-6" class="q-mt-xs text-caption">Mecânico</q-badge>
-          </div>
-          <q-avatar color="white" text-color="primary" size="36px">
-            {{ authStore.user?.name?.charAt(0)?.toUpperCase() }}
-          </q-avatar>
-          <q-btn flat round dense icon="logout" class="text-white" @click="handleLogout">
-            <q-tooltip>Sair</q-tooltip>
-          </q-btn>
-        </div>
+        <q-icon name="build" size="22px" class="q-mr-sm" />
+        <q-toolbar-title class="text-weight-bold">SGO</q-toolbar-title>
+        <q-avatar color="white" text-color="primary" size="30px" class="q-mr-xs">
+          {{ authStore.user?.name?.charAt(0)?.toUpperCase() }}
+        </q-avatar>
+        <q-btn flat round dense icon="logout" @click="handleLogout" />
       </q-toolbar>
     </q-header>
 
     <q-page-container>
-      <q-page padding>
+      <q-page class="q-pa-md">
         <router-view />
       </q-page>
     </q-page-container>
@@ -42,7 +33,7 @@ function handleLogout() {
     title: 'Sair',
     message: 'Deseja realmente sair do sistema?',
     cancel: true,
-    persistent: true
+    persistent: true,
   }).onOk(() => {
     authStore.logout()
     router.push('/login')

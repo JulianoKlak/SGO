@@ -2,7 +2,15 @@
 
 const repo = require('./serviceOrder.repository');
 const { generateOrderCode } = require('../../utils/codeGenerator');
-const { ServiceOrderProduct, ServiceOrderService, Product, Service } = require('../../models');
+const {
+  ServiceOrderProduct,
+  ServiceOrderService,
+  Product,
+  Service,
+  Stage,
+  Task,
+  SystemInfo,
+} = require('../../models');
 
 const VALID_TRANSITIONS = {
   pending: ['open', 'cancelled'],
@@ -62,6 +70,54 @@ const remove = async (id) => {
   return result;
 };
 
+const getServiceTemplateSteps = async (serviceId) => {
+  const row = await SystemInfo.findOne({ where: { meta_field: `service_steps:${serviceId}` } });
+  if (!row?.meta_value) return [];
+  try {
+    const parsed = JSON.parse(row.meta_value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((step) => {
+        if (typeof step === 'string') {
+          return { name: step.trim(), description: '' };
+        }
+        return {
+          name: String(step?.name || '').trim(),
+          description: String(step?.description || '').trim(),
+        };
+      })
+      .filter((step) => step.name.length > 0);
+  } catch {
+    return [];
+  }
+};
+
+const createServiceStageFromTemplate = async (orderId, serviceId) => {
+  const steps = await getServiceTemplateSteps(serviceId);
+  if (!steps.length) return;
+
+  const maxOrder = await Stage.max('execution_order', { where: { service_order_id: orderId } });
+  const executionOrder = Number.isFinite(maxOrder) ? maxOrder + 1 : 1;
+
+  const stages = [];
+  for (const step of steps) {
+    const stage = await Stage.create({
+      service_order_id: orderId,
+      name: step.name,
+      execution_order: executionOrder + stages.length,
+      status: 'pending',
+    });
+    if (step.description) {
+      await Task.create({
+        stage_id: stage.id,
+        description: step.description,
+        status: 'pending',
+      });
+    }
+    stages.push(stage);
+  }
+};
+
 /**
  * Recalculates and updates the total_amount of a service order.
  * @param {number} orderId
@@ -106,7 +162,10 @@ const addService = async (orderId, serviceId, price) => {
     const svc = await Service.findByPk(serviceId);
     price = svc ? parseFloat(svc.price) : 0;
   }
-  const record = await repo.addService(orderId, serviceId, price);
+  const { record, created } = await repo.addService(orderId, serviceId, price);
+  if (created) {
+    await createServiceStageFromTemplate(orderId, serviceId);
+  }
   await recalcTotal(orderId);
   return record;
 };

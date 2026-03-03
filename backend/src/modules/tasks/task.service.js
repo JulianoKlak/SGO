@@ -1,7 +1,8 @@
 'use strict';
 
 const repo = require('./task.repository');
-const { Stage, ServiceOrder, Task } = require('../../models');
+const { Stage, ServiceOrder, Task, Vehicle, Client } = require('../../models');
+const { Op } = require('sequelize');
 const stageRepo = require('../stages/stage.repository');
 
 const getByStage = (stageId) => repo.findAllByStage(stageId);
@@ -122,16 +123,83 @@ const addImage = async (taskId, userId, fileData) => {
  * Returns all tasks assigned to a mechanic across all service orders.
  * @param {number} userId
  */
-const getMechanicTasks = (userId) =>
-  Task.findAll({
-    where: { user_id: userId },
-    include: [{ model: Stage, as: 'stage' }],
-    order: [['id', 'DESC']],
+const getMechanicOrders = async (userId) => {
+  const orders = await ServiceOrder.findAll({
+    where: {
+      status: { [Op.in]: ['pending', 'open', 'in_progress', 'completed'] },
+    },
+    include: [
+      { model: Vehicle, as: 'vehicle', attributes: ['id', 'plate', 'model', 'brand', 'year'] },
+      { model: Client, as: 'client', attributes: ['id', 'name'] },
+      {
+        model: Stage,
+        as: 'stages',
+        include: [{
+          model: Task,
+          as: 'tasks',
+          where: { [Op.or]: [{ user_id: userId }, { user_id: null }] },
+          required: false,
+        }],
+      },
+    ],
+    order: [['date_opened', 'DESC'], [{ model: Stage, as: 'stages' }, 'execution_order', 'ASC']],
   });
+
+  return orders
+    .map((order) => {
+      const json = order.toJSON();
+      json.stages = (json.stages || []).map((stage) => ({
+        ...stage,
+        tasks: (stage.tasks || []).sort((a, b) => a.id - b.id),
+      }));
+      return json;
+    })
+    .filter((order) => (order.stages || []).some((stage) => (stage.tasks || []).length > 0));
+};
+
+const startMechanicOrder = async (orderId) => {
+  const order = await ServiceOrder.findByPk(orderId);
+  if (!order) throw Object.assign(new Error('Service order not found'), { status: 404 });
+  if (['completed', 'paid', 'cancelled'].includes(order.status)) {
+    throw Object.assign(new Error('This service order cannot be started'), { status: 422 });
+  }
+
+  const stages = await Stage.findAll({ where: { service_order_id: orderId }, attributes: ['id'] });
+  const stageIds = stages.map((s) => s.id);
+  if (stageIds.length) {
+    await Task.update(
+      { status: 'pending' },
+      { where: { stage_id: { [Op.in]: stageIds }, status: 'blocked' } },
+    );
+  }
+
+  if (order.status !== 'in_progress') {
+    await order.update({ status: 'in_progress' });
+  }
+  return order;
+};
+
+const blockMechanicOrder = async (orderId) => {
+  const order = await ServiceOrder.findByPk(orderId);
+  if (!order) throw Object.assign(new Error('Service order not found'), { status: 404 });
+  if (['completed', 'paid', 'cancelled'].includes(order.status)) {
+    throw Object.assign(new Error('This service order cannot be blocked'), { status: 422 });
+  }
+
+  const stages = await Stage.findAll({ where: { service_order_id: orderId }, attributes: ['id'] });
+  const stageIds = stages.map((s) => s.id);
+  if (stageIds.length) {
+    await Task.update(
+      { status: 'blocked' },
+      { where: { stage_id: { [Op.in]: stageIds }, status: { [Op.in]: ['pending', 'in_progress'] } } },
+    );
+  }
+  return order;
+};
 
 module.exports = {
   getByStage, getById, create, update, remove,
   updateTaskStatus, completeTask,
   getComments, addComment, getImages, addImage,
-  getMechanicTasks,
+  getMechanicOrders, startMechanicOrder, blockMechanicOrder,
 };
